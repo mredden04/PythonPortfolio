@@ -1,0 +1,274 @@
+[
+    {
+        "order path": [
+            "bch",
+            "link",
+            "eth",
+            "dot",
+            "ltc",
+            "ltc",
+            "dot",
+            "eth",
+            "link",
+            "bch"
+        ],
+        "arbitrage": 1.0065808791192004
+    },
+    {
+        "order path": [
+            "bch",
+            "dot",
+            "ltc",
+            "link",
+            "eth",
+            "eth",
+            "link",
+            "ltc",
+            "dot",
+            "bch"
+        ],
+        "arbitrage": 1.0061202354962786
+    },
+    {
+        "order path": [
+            "bch",
+            "ltc",
+            "dot",
+            "eth",
+            "link",
+            "link",
+            "eth",
+            "dot",
+            "ltc",
+            "bch"
+        ],
+        "arbitrage": 1.0063139900647458
+    },
+    {
+        "order path": [
+            "bch",
+            "link",
+            "eth",
+            "dot",
+            "dot",
+            "eth",
+            "link",
+            "bch"
+        ],
+        "arbitrage": 1.0035900700488132
+    },
+    {
+        "order path": [
+            "ltc",
+            "dot",
+            "eth",
+            "link",
+            "bch",
+            "bch",
+            "link",
+            "eth",
+            "dot",
+            "ltc"
+        ],
+        "arbitrage": 1.0065808791192004
+    },
+    {
+        "order path": [
+            "ltc",
+            "dot",
+            "bch",
+            "link",
+            "eth",
+            "eth",
+            "link",
+            "bch",
+            "dot",
+            "ltc"
+        ],
+        "arbitrage": 1.0061370997916004
+    },
+    {
+        "order path": [
+            "ltc",
+            "dot",
+            "eth",
+            "link",
+            "link",
+            "eth",
+            "dot",
+            "ltc"
+        ],
+        "arbitrage": 1.006652809678202
+    },
+    {
+        "order path": [
+            "ltc",
+            "link",
+            "eth",
+            "dot",
+            "dot",
+            "eth",
+            "link",
+            "ltc"
+        ],
+        "arbitrage": 1.0035732484453488
+    },
+    {
+        "order path": [
+            "eth",
+            "link",
+            "ltc",
+            "dot",
+            "bch",
+            "bch",
+            "dot",
+            "ltc",
+            "link",
+            "eth"
+        ],
+        "arbitrage": 1.0061202354962784
+    },
+    {
+        "order path": [
+            "eth",
+            "link",
+            "bch",
+            "dot",
+            "ltc",
+            "ltc",
+            "dot",
+            "bch",
+            "link",
+            "eth"
+        ],
+        "arbitrage": 1.0061370997916004
+    },
+    {
+        "order path": [
+            "eth",
+            "dot",
+            "ltc",
+            "link",
+            "link",
+            "ltc",
+            "dot",
+            "eth"
+        ],
+        "arbitrage": 1.005577548169297
+    },
+    {
+        "order path": [
+            "eth",
+            "link",
+            "ltc",
+            "dot",
+            "dot",
+            "ltc",
+            "link",
+            "eth"
+        ],
+        "arbitrage": 1.00387545632719
+    },
+    {
+        "order path": [
+            "link",
+            "eth",
+            "dot",
+            "ltc",
+            "bch",
+            "bch",
+            "ltc",
+            "dot",
+            "eth",
+            "link"
+        ],
+        "arbitrage": 1.0063139900647455
+    },
+    {
+        "order path": [
+            "link",
+            "eth",
+            "dot",
+            "ltc",
+            "ltc",
+            "dot",
+            "eth",
+            "link"
+        ],
+        "arbitrage": 1.006652809678202
+    },
+    {
+        "order path": [
+            "link",
+            "ltc",
+            "dot",
+            "eth",
+            "eth",
+            "dot",
+            "ltc",
+            "link"
+        ],
+        "arbitrage": 1.005577548169297
+    },
+    {
+        "order path": [
+            "link",
+            "eth",
+            "dot",
+            "dot",
+            "eth",
+            "link"
+        ],
+        "arbitrage": 1.0036617868837387
+    },
+    {
+        "order path": [
+            "dot",
+            "eth",
+            "link",
+            "bch",
+            "bch",
+            "link",
+            "eth",
+            "dot"
+        ],
+        "arbitrage": 1.0035900700488132
+    },
+    {
+        "order path": [
+            "dot",
+            "eth",
+            "link",
+            "ltc",
+            "ltc",
+            "link",
+            "eth",
+            "dot"
+        ],
+        "arbitrage": 1.003573248445349
+    },
+    {
+        "order path": [
+            "dot",
+            "ltc",
+            "link",
+            "eth",
+            "eth",
+            "link",
+            "ltc",
+            "dot"
+        ],
+        "arbitrage": 1.0038754563271903
+    },
+    {
+        "order path": [
+            "dot",
+            "eth",
+            "link",
+            "link",
+            "eth",
+            "dot"
+        ],
+        "arbitrage": 1.0036617868837387
+    }
+]
