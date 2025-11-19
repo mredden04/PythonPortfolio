@@ -1,0 +1,236 @@
+Option Explicit
+
+' Safely convert any input to a string and remove trailing digits or trailing colon
+Function RemoveTrailingDigits(v As Variant) As String
+    Dim s As String
+    Dim i As Long
+    s = Trim$(CStr(v))
+    If s = "" Then
+        RemoveTrailingDigits = ""
+        Exit Function
+    End If
+
+    i = Len(s)
+    Do While i > 0
+        Dim ch As String
+        ch = Mid$(s, i, 1)
+        If Not (ch Like "[0-9]" Or ch = ":") Then Exit Do
+        i = i - 1
+    Loop
+
+    RemoveTrailingDigits = Trim$(Left$(s, i))
+End Function
+
+' Map raw labels to database labels; return rawLabel if not in mapping
+Function FixLabel(rawLabel As String) As String
+    Dim key As String
+    key = Trim$(Replace(rawLabel, Chr(10), " ")) ' Normalize line breaks
+
+    Select Case LCase$(key)
+        Case "student enrollment": FixLabel = "Enrollment"
+        Case "violent crime", "violent  crime": FixLabel = "Violent Crime"
+        Case "murder and nonnegligent manslaughter": FixLabel = "Murder"
+        Case "forcible rape": FixLabel = "Forcible Rape"
+        Case "robbery": FixLabel = "Robbery"
+        Case "aggravated assault": FixLabel = "Assault"
+        Case "property crime", "property  crime": FixLabel = "Property Crime"
+        Case "burglary": FixLabel = "Burglary"
+        Case "larceny-theft", "larceny theft", "larceny- theft": FixLabel = "Larceny"
+        Case "motor vehicle theft": FixLabel = "Auto Theft"
+        Case "arson": FixLabel = "Arson"
+        Case Else
+            FixLabel = Trim$(key)
+    End Select
+End Function
+
+' Escape single quotes for SQL
+Function SqlSafe(s As String) As String
+    SqlSafe = Replace(s, "'", "''")
+End Function
+
+' Extract a 4-digit year
+Function ExtractYearFromHeader(h As Variant) As String
+    Dim s As String: s = Trim$(CStr(h))
+    Dim i As Long
+
+    If Len(s) >= 4 And IsNumeric(Right$(s, 4)) Then
+        ExtractYearFromHeader = Right$(s, 4)
+        Exit Function
+    End If
+
+    For i = 1 To Len(s) - 3
+        If IsNumeric(Mid$(s, i, 4)) Then
+            ExtractYearFromHeader = Mid$(s, i, 4)
+            Exit Function
+        End If
+    Next i
+
+    ExtractYearFromHeader = ""
+End Function
+
+
+' ===============================
+'      MAIN PROCESSING SUB
+' ===============================
+
+Sub processDataFiles()
+    Dim dataFolder As String
+    Dim fileName As String
+    Dim fullPath As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    
+    Dim stateName As String
+    Dim yearText As String
+    Dim headerText As Variant
+    Dim university As String
+    Dim campus As String
+    Dim lastUniversity As String
+    Dim dataLabel As String
+    Dim rawValue As Variant
+    Dim dataValue As Long
+    
+    Dim r As Long, c As Long
+    Dim firstDataCol As Long
+    Dim hasCampus As Boolean
+    Dim hasNumeric As Boolean
+    Dim sql As String
+    Dim recordsAffected As Long
+    
+    Dim cn As New ADODB.Connection
+    
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+    
+    dataFolder = ThisWorkbook.Path & "\data\"
+    fileName = Dir(dataFolder & "*.xlsx")
+    
+    If fileName = "" Then GoTo CleanExit
+    
+    cn.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & _
+            ThisWorkbook.Path & "\UniversityCrime.mdb;"
+    
+    Do While fileName <> ""
+        fullPath = dataFolder & fileName
+        
+        Set wb = Workbooks.Open(fullPath, ReadOnly:=True)
+        Set ws = wb.Sheets(1)
+        
+        ' ---------- FILE-LEVEL PROCESSING ----------
+        
+        stateName = Replace(Replace(fileName, ".xlsx", ""), "_", " ")
+        stateName = WorksheetFunction.Proper(stateName)
+        
+        headerText = ws.Range("A4").value
+        yearText = ExtractYearFromHeader(headerText)
+        
+        If yearText = "" Then
+            headerText = ws.Range("B2").value
+            yearText = ExtractYearFromHeader(headerText)
+        End If
+        
+        If yearText = "" Then
+            Debug.Print "Skipping file (no year found): " & fileName
+            wb.Close False
+            fileName = Dir()
+            GoTo ContinueLoop
+        End If
+        
+        hasCampus = (LCase$(Trim$(CStr(ws.Cells(5, 2).value)))) = "campus"
+        firstDataCol = IIf(hasCampus, 3, 2)
+        
+        lastUniversity = ""
+        r = 6
+        
+        ' ---------- MAIN ROW LOOP ----------
+        
+        Do
+            If Trim$(CStr(ws.Cells(r, 1).value)) <> "" Then
+                university = Trim$(RemoveTrailingDigits(ws.Cells(r, 1).value))
+                lastUniversity = university
+            Else
+                university = lastUniversity
+            End If
+            
+            If university = "" Then Exit Do
+            
+            If hasCampus Then
+                campus = Trim$(RemoveTrailingDigits(ws.Cells(r, 2).value))
+            Else
+                campus = ""
+            End If
+            
+            hasNumeric = False
+            For c = firstDataCol To firstDataCol + 50
+                If Trim$(CStr(ws.Cells(5, c).value)) = "" Then Exit For
+                rawValue = ws.Cells(r, c).value
+                If IsNumeric(rawValue) And Trim$(CStr(rawValue)) <> "" Then
+                    hasNumeric = True
+                    Exit For
+                End If
+            Next c
+            
+            If Not hasNumeric Then Exit Do
+            
+            c = firstDataCol
+            
+            ' ---------- COLUMN LOOP ----------
+            
+            Do While Trim$(CStr(ws.Cells(5, c).value)) <> ""
+                
+                dataLabel = Replace(ws.Cells(5, c).value, Chr(10), " ")
+                dataLabel = FixLabel(RemoveTrailingDigits(dataLabel))
+                
+                Dim isAggregate As Boolean
+                isAggregate = (LCase$(dataLabel) = "violent crime" Or _
+                               LCase$(dataLabel) = "property crime")
+                
+                If Not isAggregate Then
+                    rawValue = ws.Cells(r, c).value
+                    rawValue = Trim$(Replace(CStr(rawValue), Chr(160), ""))
+                    
+                    If rawValue <> "" And IsNumeric(rawValue) Then
+                        dataValue = CLng(rawValue)
+                        
+                        If campus = "" Then
+                            sql = "INSERT INTO crimeData (reportYear, state, school, campus, dataLabel, dataValue) " & _
+                                  "VALUES (" & yearText & ", '" & SqlSafe(stateName) & "', '" & _
+                                  SqlSafe(university) & "', NULL, '" & SqlSafe(dataLabel) & "', " & dataValue & ")"
+                        Else
+                            sql = "INSERT INTO crimeData (reportYear, state, school, campus, dataLabel, dataValue) " & _
+                                  "VALUES (" & yearText & ", '" & SqlSafe(stateName) & "', '" & _
+                                  SqlSafe(university) & "', '" & SqlSafe(campus) & "', '" & SqlSafe(dataLabel) & "', " & dataValue & ")"
+                        End If
+                        
+                        On Error GoTo SQLExecError
+                        cn.Execute sql, recordsAffected
+                        On Error GoTo 0
+                    End If
+                End If
+                
+                c = c + 1
+            Loop
+            
+            r = r + 1
+        Loop
+        
+ContinueLoop:
+        wb.Close False
+        fileName = Dir()
+    Loop
+    
+CleanExit:
+    If Not cn Is Nothing Then
+        On Error Resume Next
+        cn.Close
+        On Error GoTo 0
+    End If
+    
+    Application.DisplayAlerts = True
+    Application.ScreenUpdating = True
+    Exit Sub
+
+SQLExecError:
+    Debug.Print "SQL error in file: " & fullPath & vbCrLf & "SQL: " & sql
+    Resume Next
+End Sub
